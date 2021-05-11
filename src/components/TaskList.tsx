@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import '../styles/tasklist.scss'
 
@@ -13,17 +13,43 @@ interface Task {
 export function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [inputError, setInputError] = useState('');
+
+  useEffect(() => {
+    console.log(tasks)    
+  }, [tasks])
 
   function handleCreateNewTask() {
     // Crie uma nova task com um id random, não permita criar caso o título seja vazio.
+    if (newTaskTitle && newTaskTitle != " ") {
+      setTasks([...tasks, {
+        id: Math.floor(Math.random() * 1000),
+        isComplete: false,
+        title: newTaskTitle
+      }])
+    } else {
+      setInputError("Digite um título para sua tarefa")
+    }
   }
 
   function handleToggleTaskCompletion(id: number) {
     // Altere entre `true` ou `false` o campo `isComplete` de uma task com dado ID
-  }
+    const newTaskCompletion = tasks
 
+    newTaskCompletion.map(task => {
+      if(task.id === id) {
+        task.isComplete = !task.isComplete
+        setTasks([...newTaskCompletion])
+      }
+    })
+  }
+  
   function handleRemoveTask(id: number) {
     // Remova uma task da listagem pelo ID
+    setTasks([
+      ...tasks.filter(task => task.id !== id)
+    ])
+    
   }
 
   return (
@@ -32,10 +58,14 @@ export function TaskList() {
         <h2>Minhas tasks</h2>
 
         <div className="input-group">
+          <span style={{color: 'red', margin: '0 .5rem'}}>{inputError}</span>
           <input 
             type="text" 
             placeholder="Adicionar novo todo" 
-            onChange={(e) => setNewTaskTitle(e.target.value)}
+            onChange={(e) => {
+              setNewTaskTitle(e.target.value);
+              setInputError('');
+            }}
             value={newTaskTitle}
           />
           <button type="submit" data-testid="add-task-button" onClick={handleCreateNewTask}>
